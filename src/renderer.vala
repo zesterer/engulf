@@ -43,7 +43,7 @@ namespace NGulf
 					running = false;
 
 				if (event.type == SDL.EventType.MOUSEBUTTONDOWN)
-					this.application.core.world.getCell(event.button.x / dx, event.button.y / dy).minion_count[0] = 25600;
+					this.application.core.world.getCell(event.button.x / dx, event.button.y / dy).minion_cache[0] = 25600;
 			}
 
 			return running;
@@ -63,7 +63,7 @@ namespace NGulf
 			{
 				for (int y = 0; y < height; y ++)
 				{
-					SDLGraphics.Rectangle.fill_color(screen, (int16)(dx * x), (int16)(dy * y), (int16)(dx * (x + 1)), (int16)(dy * (y + 1)), (uint32)0x000F0FFF + (0x01 << 24) * ((this.application.core.world.getCell(x, y).minion_count[0]).clamp(0, 255)));
+					SDLGraphics.Rectangle.fill_color(screen, (int16)(dx * x), (int16)(dy * y), (int16)(dx * (x + 1) - 2), (int16)(dy * (y + 1) - 2), (uint32)0xFF0F0F00 + (0x01) * ((this.application.core.world.getCell(x, y).minion[0]).clamp(0, 255)));
 				}
 			}
 		}

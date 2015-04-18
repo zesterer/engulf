@@ -6,7 +6,7 @@ namespace NGulf
 
 		public Core()
 		{
-			this.world = new World(128, 96, 2);
+			this.world = new World(160, 120, 2);
 		}
 
 		public void tick()

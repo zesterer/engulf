@@ -27,8 +27,6 @@ namespace NGulf
 					this.cells[x, y] = new Cell(this, this.team_count, x, y);
 				}
 			}
-
-			this.cells[this.width / 2, this.height / 2].minion_count[0] = 25600;
 		}
 
 		public void tick()
@@ -37,7 +35,23 @@ namespace NGulf
 			{
 				for (int y = 0; y < this.height; y ++)
 				{
+					this.cells[x, y].pretick();
+				}
+			}
+
+			for (int x = 0; x < this.width; x ++)
+			{
+				for (int y = 0; y < this.height; y ++)
+				{
 					this.cells[x, y].tick();
+				}
+			}
+
+			for (int x = 0; x < this.width; x ++)
+			{
+				for (int y = 0; y < this.height; y ++)
+				{
+					this.cells[x, y].posttick();
 				}
 			}
 		}
@@ -57,7 +71,8 @@ namespace NGulf
 
 		public bool solid;
 
-		public int[] minion_count;
+		public int[] minion;
+		public int[] minion_cache;
 
 		public Cell(World world, int team_count, int x, int y)
 		{
@@ -66,63 +81,81 @@ namespace NGulf
 			this.x = x;
 			this.y = y;
 
-			this.minion_count = new int[team_count];
+			this.minion = new int[team_count];
+			this.minion_cache = new int[team_count];
 
-			for (int count = 0; count < this.minion_count.length; count ++)
+			for (int count = 0; count < this.minion.length; count ++)
 			{
-				this.minion_count[count] = 0;
+				this.minion[count] = 0;
+				this.minion_cache[count] = 0;
 			}
 
 			this.solid = false;
 		}
 
+		public void pretick()
+		{
+			for (int team = 0; team < this.minion.length; team ++)
+			{
+				this.minion[team] = this.minion_cache[team];
+			}
+		}
+
 		public void tick()
 		{
-			int *pos_r = null;
-			int *pos_u = null;
-			int *pos_l = null;
-			int *pos_d = null;
+			int pos_r = 0;
+			int pos_u = 0;
+			int pos_l = 0;
+			int pos_d = 0;
 
-			for (int team = 0; team < this.minion_count.length; team ++)
+			for (int team = 0; team < this.minion.length; team ++)
 			{
-				int *pos_us = &this.minion_count[team];
-				int val_us = this.minion_count[team];
+				int *pos_us = &this.minion[team];
+				int val_us = this.minion_cache[team];
 
-				pos_r = &this.world.getCell(this.x + 1, this.y + 0).minion_count[team];
-				pos_u = &this.world.getCell(this.x + 0, this.y - 1).minion_count[team];
-				pos_l = &this.world.getCell(this.x - 1, this.y + 0).minion_count[team];
-				pos_d = &this.world.getCell(this.x + 0, this.y + 1).minion_count[team];
+				pos_r = this.world.getCell(this.x + 1, this.y + 0).minion_cache[team];
+				pos_u = this.world.getCell(this.x + 0, this.y - 1).minion_cache[team];
+				pos_l = this.world.getCell(this.x - 1, this.y + 0).minion_cache[team];
+				pos_d = this.world.getCell(this.x + 0, this.y + 1).minion_cache[team];
 
-				int average_near = (*pos_r + *pos_u + *pos_l + *pos_d) / 4;
+				int average_near = (pos_r + pos_u + pos_l + pos_d) / 4;
 
-				int diff_r = *pos_us - *pos_r;
-				int diff_u = *pos_us - *pos_u;
-				int diff_l = *pos_us - *pos_l;
-				int diff_d = *pos_us - *pos_d;
+				int diff_r = (val_us - pos_r).clamp(-1000, 1000);
+				int diff_u = (val_us - pos_u).clamp(-1000, 1000);
+				int diff_l = (val_us - pos_l).clamp(-1000, 1000);
+				int diff_d = (val_us - pos_d).clamp(-1000, 1000);
 
-				if (*pos_r < val_us)
+				if (pos_r < val_us)
 				{
-					*pos_r += diff_r / 50 + 1;
-					*pos_us -= diff_r / 50 + 1;
+					this.world.getCell(this.x + 1, this.y + 0).minion[team] += diff_r / 8;
+					*pos_us -= diff_r / 8;
 				}
 
-				if (*pos_u < val_us)
+				if (pos_u < val_us)
 				{
-					*pos_u += diff_u / 50 + 1;
-					*pos_us -= diff_u / 50 + 1;
+					this.world.getCell(this.x + 0, this.y - 1).minion[team] += diff_u / 8;
+					*pos_us -= diff_u / 8;
 				}
 
-				if (*pos_l < val_us)
+				if (pos_l < val_us)
 				{
-					*pos_l += diff_l / 50 + 1;
-					*pos_us -= diff_l / 50 + 1;
+					this.world.getCell(this.x - 1, this.y + 0).minion[team] += diff_l / 8;
+					*pos_us -= diff_l / 8;
 				}
 
-				if (*pos_d < val_us)
+				if (pos_d < val_us)
 				{
-					*pos_d += diff_d / 50 + 1;
-					*pos_us -= diff_d / 50 + 1;
+					this.world.getCell(this.x + 0, this.y + 1).minion[team] += diff_d / 8;
+					*pos_us -= diff_d / 8;
 				}
+			}
+		}
+
+		public void posttick()
+		{
+			for (int team = 0; team < this.minion.length; team ++)
+			{
+				this.minion_cache[team] = this.minion[team];
 			}
 		}
 	}
