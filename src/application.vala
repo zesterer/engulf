@@ -2,6 +2,7 @@ namespace NGulf
 {
 	public class Application
 	{
+		public Core core;
 		public Renderer renderer;
 
 		public bool running;
@@ -10,6 +11,7 @@ namespace NGulf
 		{
 			stdout.printf("Starting Application...\n");
 
+			this.core = new Core();
 			this.renderer = new Renderer(this);
 
 			this.running = true;
@@ -19,6 +21,7 @@ namespace NGulf
 		{
 			while (this.running)
 			{
+				this.core.tick();
 				this.running &= this.renderer.run();
 			}
 		}

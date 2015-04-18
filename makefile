@@ -7,6 +7,8 @@ VALA_SOURCES=\
 src/main.vala \
 src/application.vala \
 src/renderer.vala \
+src/core.vala \
+src/world.vala \
 
 VALA_PACKAGES=--pkg sdl --pkg sdl-gfx -X -lSDL_gfx -X -I/usr/include/SDL --Xcc=-I/usr/include/SDL -X -lm \
 
